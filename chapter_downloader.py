@@ -10,7 +10,7 @@ from PyPDF2 import PdfFileMerger
 
 # From guya.moe it's possible to download different kaguya manga, such as the official or the doujin.
 def download_chapter(manga_to_download, chapter, path_to_download_to, wants_zip=False, loading_bar=None, app_root=None, label=None, button=None, button_vol=None):
-    if path_to_download_to is "":
+    if path_to_download_to == "":
         print("No argument was given for path_to_download_to")
         return
     dirpath = tempfile.mkdtemp()
@@ -79,7 +79,7 @@ def get_chapter_list(manga_to_download):
 
 
 def download_volume(manga_to_download, volume, path_to_download_to, loading_bar, app_root, label, button, button_vol):
-    if path_to_download_to is "":
+    if path_to_download_to == "":
         print("No argument was given for path_to_download_to")
         return
     dirpath = tempfile.mkdtemp()
