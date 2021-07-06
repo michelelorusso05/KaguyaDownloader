@@ -1,4 +1,7 @@
 # System Libraries
+import os
+import sys
+import webbrowser
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import IntVar, PhotoImage
@@ -24,33 +27,64 @@ volume_list_doujin = [f"Volume {i + 1}" for i in range(chapter_downloader.get_vo
 app = tk.ThemedTk()
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
 def download():
-    if wants_zip.get() == 0:
-        download_path = filedialog.asksaveasfilename(initialdir="/",
-                                                     initialfile=dropDown.get() + ".pdf",
-                                                     title="Select where to save the downloaded chapter",
-                                                     filetypes=(
-                                                            ("PDF documents", "*.pdf"),
-                                                            )
-                                                     )
-    else:
-        download_path = filedialog.asksaveasfilename(initialdir="/",
-                                     initialfile=dropDown.get() + ".zip",
-                                     title="Select where to save the downloaded chapter",
-                                     filetypes=(
-                                         ("Compressed files", "*.zip"),
+    if note_book.index("current") == 0:
+
+        filepath = dropDown.get()
+        illegal_characters = ":*?\"<>|"
+        filepath = filepath.translate({ord(i): None for i in illegal_characters})
+
+        if wants_zip.get() == 0:
+            download_path = filedialog.asksaveasfilename(initialdir="/",
+                                                         initialfile=filepath + ".pdf",
+                                                         title="Select where to save the downloaded chapter",
+                                                         filetypes=(
+                                                                ("PDF documents", "*.pdf"),
+                                                                )
+                                                         )
+        else:
+            download_path = filedialog.asksaveasfilename(initialdir="/",
+                                         initialfile=filepath + ".zip",
+                                         title="Select where to save the downloaded chapter",
+                                         filetypes=(
+                                             ("Compressed files", "*.zip"),
+                                             )
                                          )
-                                     )
-    chapter_downloader.download_chapter(manga_names[selected_manga.get()], selected_chapter, bool(wants_zip.get()),
-                                        download_path, progress, app, progressLabel)
+        chapter_downloader.download_chapter(manga_names[selected_manga.get()], selected_chapter, download_path,
+                                            bool(wants_zip.get()), progress, app, progressLabel, button, button_vol)
+    elif note_book.index("current") == 1:
+
+        filepath = dropDown_vol.get()
+        illegal_characters = "*?\"<>|"
+        filepath = filepath.translate({ord(i): None for i in illegal_characters})
+
+        download_path = filedialog.asksaveasfilename(initialdir="/",
+                                                     initialfile=filepath + ".pdf",
+                                                     title="Select where to save the downloaded volume",
+                                                     filetypes=(
+                                                         ("PDF documents", "*.pdf"),
+                                                     )
+                                                     )
+        chapter_downloader.download_volume(manga_names[selected_manga.get()], filepath.replace("Volume ", ""),
+                                           download_path, progress, app, progressLabel, button, button_vol)
 
 
 app.title("Kaguya Downloader")
 app.resizable(0, 0)
-app.iconphoto(True, PhotoImage(file="Assets/logo.png"))
 
 app.get_themes()
 app.set_theme("breeze")
+
+try:
+	app.iconphoto(True, PhotoImage(file=resource_path("logo.png")))
+except:
+	print("Unable to find logo.png, enjoy Kaguya Downloader without the icon ;(")
 
 note_book = ttk.Notebook(app)
 page_download_chapters = ttk.Frame(note_book)
@@ -114,7 +148,14 @@ r3_vol.grid(column=1, row=2, sticky="W")
 
 # Info Section
 
-# TODO: Info section
+info_title = ttk.Label(page_show_help, text="Kaguya Downloader", font=("Arial", 20))
+info_title.pack(pady=10)
+info_version = ttk.Label(page_show_help, text="Ver. 1.1", font=("Arial", 10))
+info_version.pack(pady=5)
+info_author = ttk.Label(page_show_help, text="Created by u/MikBros", font=("Arial", 10))
+info_author.pack(pady=5)
+report_bug = ttk.Button(page_show_help, text="Report a bug", command=lambda: (webbrowser.open("https://www.reddit.com/message/compose/?to=MikBros")))
+report_bug.pack(pady=10)
 
 
 def on_value_change(event):
@@ -145,6 +186,5 @@ progress.grid(column=0, row=2, ipady=5)
 progressLabel = ttk.Label(app, text="Ready")
 progressLabel.grid(column=0, row=1, pady=(5, 0))
 
-# TODO: Add possibility to downlaod entire volumes at once
 
 app.mainloop()
